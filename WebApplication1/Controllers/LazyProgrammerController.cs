@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using WebApp.DTO;
+using WebApp.Services;
 
 namespace WebApp.Controllers
 {
@@ -6,28 +8,30 @@ namespace WebApp.Controllers
     [Route("[controller]")]
     public class LazyProgrammerController : ControllerBase
     {
-        private static readonly string[] Excuses = new[]
-        {
-            "Устал", "Работы много", "Голова болит", "Макс, ну че ты", "В бар пошли", "Уснул", "Завтра точно начну", "На шару устроюсь", "Элеонора мешает"
-        };
-
+        private readonly IProgrammerService _programmerService;
         private readonly ILogger<LazyProgrammerController> _logger;
 
-        public LazyProgrammerController(ILogger<LazyProgrammerController> logger)
+        public LazyProgrammerController(IProgrammerService programmerService, ILogger<LazyProgrammerController> logger)
         {
+            _programmerService = programmerService;
             _logger = logger;
         }
 
-        [HttpGet(Name = "GetLazyProgrammer")]
-        public IEnumerable<LazyProgrammer> Get()
+        [HttpGet]
+        [ProducesResponseType(typeof(List<LazyProgrammer>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        public ActionResult Get()
         {
-            return Enumerable.Range(1, 5).Select(index => new LazyProgrammer
+            try
             {
-                Date = DateOnly.FromDateTime(new DateTime(2024, 1, 1).AddDays(Random.Shared.Next(366))),
-                CurrentSalary = Random.Shared.Next(10, 15)*10,
-                Excuse = Excuses[Random.Shared.Next(Excuses.Length)]
-            })
-            .ToArray();
+                var result = _programmerService.GetLazyProgrammers();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
