@@ -24,7 +24,7 @@ namespace WebApp.Controllers
         {
             try
             {
-                var result = _programmerService.GetLazyProgrammers();
+                var result = _programmerService.GetLazyProgrammersAsync();
 
                 return Ok(result);
             }

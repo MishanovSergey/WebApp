@@ -4,5 +4,5 @@ namespace WebApp.Services;
 
 public interface IProgrammerService
 {
-    List<LazyProgrammer> GetLazyProgrammers();
+    Task<List<LazyProgrammer>> GetLazyProgrammersAsync();
 }
