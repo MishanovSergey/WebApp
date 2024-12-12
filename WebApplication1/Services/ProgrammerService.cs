@@ -21,10 +21,21 @@ public class ProgrammerService : IProgrammerService
 
     public async Task<List<LazyProgrammer>> GetLazyProgrammersAsync()
     {
-        var config = Configuration.Default.WithDefaultLoader();
+        //var config = Configuration.Default.WithDefaultLoader();
         var address = "https://lenta.ru";
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(address);
+        //var parser = new HtmlParser();
+        //var document = parser.ParseDocument(address);
+
+        // Setup the configuration to support document loading
+        var config = Configuration.Default.WithDefaultLoader();
+        // Load the names of all The Big Bang Theory episodes from Wikipedia
+        //var address = "http://en.wikipedia.org/wiki/List_of_The_Big_Bang_Theory_episodes";
+        // Asynchronously get the document
+        var document = await BrowsingContext.New(config).OpenAsync(address);
+
+
+
+
 
         //var document = await BrowsingContext.New(config).OpenAsync(address);
         //string text = document.QuerySelector("time").Text();
@@ -33,7 +44,7 @@ public class ProgrammerService : IProgrammerService
         //Здесь мы получаем заголовки
         //var items = document.All.Where(m => m.LocalName == "h3" && m.ClassList.Contains("card-big__title"));
         IEnumerable<IElement> items = document.QuerySelectorAll("h3")
-            .Where(item => item.ClassName != null && item.ClassName.Contains("card-big__date"));
+            .Where(item => item.ClassName != null && item.ClassName.Contains("card-big__title"));
 
         foreach (var item in items)
         {

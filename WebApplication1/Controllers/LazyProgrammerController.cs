@@ -20,11 +20,11 @@ namespace WebApp.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<LazyProgrammer>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public ActionResult Get()
+        public async Task<ActionResult> Get()
         {
             try
             {
-                var result = _programmerService.GetLazyProgrammersAsync();
+                var result = await _programmerService.GetLazyProgrammersAsync();
 
                 return Ok(result);
             }
