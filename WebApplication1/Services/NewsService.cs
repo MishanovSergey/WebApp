@@ -4,22 +4,19 @@ using WebApp.DTO;
 using AngleSharp;
 using AngleSharp.Html.Parser;
 using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.Intrinsics.X86;
+using System.Collections.Generic;
 
 namespace WebApp.Services;
 
-public class ProgrammerService : IProgrammerService
+public class NewsService : INewsService
 {
-    private static readonly string[] Excuses =
-    [
-        "Устал", "Работы много", "Голова болит", "Макс, ну че ты", "В бар пошли", "Уснул", "Завтра точно начну", "На шару устроюсь", "Элеонора мешает"
-    ];
-
-    public ProgrammerService()
+    public NewsService()
     {
 
     }
 
-    public async Task<List<LazyProgrammer>> GetLazyProgrammersAsync()
+    public async Task<List<NewsInfo>> GetNewsInfoAsync()
     {
         //var config = Configuration.Default.WithDefaultLoader();
         var address = "https://lenta.ru";
@@ -40,26 +37,42 @@ public class ProgrammerService : IProgrammerService
         //var document = await BrowsingContext.New(config).OpenAsync(address);
         //string text = document.QuerySelector("time").Text();
         //Для хранения заголовков
-        List<string> list = new List<string>();
+        List<string> listHeaders = new List<string>();
+        List<string> listPostTime = new List<string>();
+        List<(string, string)> listResult = new List<(string, string)>();
         //Здесь мы получаем заголовки
         //var items = document.All.Where(m => m.LocalName == "h3" && m.ClassList.Contains("card-big__title"));
-        IEnumerable<IElement> items = document.QuerySelectorAll("h3")
-            .Where(item => item.ClassName != null && item.ClassName.Contains("card-big__title"));
+        IEnumerable<IElement> headers = document.QuerySelectorAll("h3")
+            .Where(item => item.ClassName != null && (item.ClassName.Contains("card-big__title")));// || item.ClassName.Contains("card-mini__title")));
+        IEnumerable<IElement> timeList = document.QuerySelectorAll("time")
+            .Where(item => item.ClassName != null && (item.ClassName.Contains("card-big__date")));// || item.ClassName.Contains("card-mini__info-item")));
 
-        foreach (var item in items)
+        foreach (var item in headers)
         {
             //Добавляем заголовки в коллекцию.
-            list.Add(item.TextContent);
+            listHeaders.Add(item.TextContent);
         }
-        List<LazyProgrammer> listResult = new List<LazyProgrammer>();
-
-        foreach (var item in list)
+        foreach (var item in timeList)
         {
-            listResult.Add(new LazyProgrammer
+            //Добавляем заголовки в коллекцию.
+            listPostTime.Add(item.TextContent);
+        }
+
+        int counter = 0;
+        foreach (var item in listHeaders) //New
+        {
+            listResult.Add((item, listPostTime[counter]));
+            counter++;
+        }
+
+        List<NewsInfo> listLazyProgrammers = new List<NewsInfo>();
+
+        foreach (var item in listResult.Distinct())
+        {
+            listLazyProgrammers.Add(new NewsInfo
             {
-                Date = DateOnly.FromDateTime(new DateTime(2024, 1, 1).AddDays(Random.Shared.Next(366))),
-                CurrentSalary = Random.Shared.Next(10, 15) * 10,
-                Excuse = item//Excuses[Random.Shared.Next(Excuses.Length)]
+                PostTime = item.Item2,
+                Header = item.Item1//Excuses[Random.Shared.Next(Excuses.Length)]
             });
         }
         //var result = Enumerable.Range(1, list.Count).Select(index => new LazyProgrammer
@@ -70,6 +83,6 @@ public class ProgrammerService : IProgrammerService
         //})
         //.ToList();
 
-        return listResult;
+        return listLazyProgrammers;
     }
 }

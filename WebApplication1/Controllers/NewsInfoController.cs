@@ -6,25 +6,25 @@ namespace WebApp.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class LazyProgrammerController : ControllerBase
+    public class NewsInfoController : ControllerBase
     {
-        private readonly IProgrammerService _programmerService;
-        private readonly ILogger<LazyProgrammerController> _logger;
+        private readonly INewsService _programmerService;
+        private readonly ILogger<NewsInfoController> _logger;
 
-        public LazyProgrammerController(IProgrammerService programmerService, ILogger<LazyProgrammerController> logger)
+        public NewsInfoController(INewsService programmerService, ILogger<NewsInfoController> logger)
         {
             _programmerService = programmerService;
             _logger = logger;
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(List<LazyProgrammer>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<NewsInfo>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Get()
         {
             try
             {
-                var result = await _programmerService.GetLazyProgrammersAsync();
+                var result = await _programmerService.GetNewsInfoAsync();
 
                 return Ok(result);
             }

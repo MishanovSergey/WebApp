@@ -16,7 +16,7 @@ namespace WebApp
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddSingleton<IProgrammerService, ProgrammerService>();
+            builder.Services.AddSingleton<INewsService, NewsService>();
 
             var app = builder.Build();
 
