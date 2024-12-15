@@ -4,5 +4,5 @@ public class NewsInfo
 {
     public string? PostTime { get; set; }
 
-    public string? Header { get; set; }
+    public required string Header { get; set; }
 }
