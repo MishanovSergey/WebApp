@@ -8,12 +8,12 @@ namespace WebApp.Controllers
     [Route("[controller]")]
     public class NewsInfoController : ControllerBase
     {
-        private readonly INewsService _programmerService;
+        private readonly INewsService _newsService;
         private readonly ILogger<NewsInfoController> _logger;
 
         public NewsInfoController(INewsService programmerService, ILogger<NewsInfoController> logger)
         {
-            _programmerService = programmerService;
+            _newsService = programmerService;
             _logger = logger;
         }
 
@@ -24,7 +24,7 @@ namespace WebApp.Controllers
         {
             try
             {
-                var result = await _programmerService.GetNewsInfoAsync();
+                var result = await _newsService.GetNewsInfoAsync();
 
                 return Ok(result);
             }

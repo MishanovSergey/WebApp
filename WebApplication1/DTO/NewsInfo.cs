@@ -1,8 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace WebApp.DTO;
 
 public class NewsInfo
 {
-    public string? PostTime { get; set; }
+    [Required]
+    public string PostTime { get; set; } = default!;
 
-    public required string Header { get; set; }
+    [Required]
+    public string Header { get; set; } = default!;
 }
