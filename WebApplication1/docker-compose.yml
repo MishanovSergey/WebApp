@@ -1,0 +1,29 @@
+services:
+  webapp:
+    image: webapp:dev
+    container_name: webapp_compose
+    restart: unless-stopped
+    # build:
+    #   dockerfile: Dockerfile
+    ports:
+      - "9000:8080"
+      - "9001:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080 
+  
+  
+  # tunnel:
+  #   image: snowdreamtech/frpc:latest
+  #   container_name: tunnel
+  #   restart: always
+  #   network_mode: host
+  #   command: 
+  #     - http
+  #     - --server_addr=frp.radario.ru
+  #     - --server_port=7000
+  #     - --token=6hbfols74j3*f!   #нужно подставить из битвардена
+  #     - --local_port=80 #ваш локальный порт
+  #     - --local_ip=host.docker.internal #если сервис не в этом же compose, нужно оставить host.docker.internal
+  #     - --custom_domain=sub.frp.radario.ru #субдомен где будет находится страница
+  #     - --proxy_name=sub #имя
