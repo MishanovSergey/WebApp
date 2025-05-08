@@ -30,13 +30,15 @@ public class NewsService : INewsService
 
             if(newsItem.QuerySelector("span") != null)  //Заголовок объекта состоит из двух объектов разных классов
             {
-                newsTitle = 
+                    newsTitle =
                     $"{newsItem.QuerySelectorAll("h3")
                         .FirstOrDefault(item => item.ClassName != null && (item.ClassName.Contains("card-big__title") ||
-                                       item.ClassName.Contains("card-feature__title")))!.TextContent}" +
+                                       item.ClassName.Contains("card-feature__title") ||
+                                       item.ClassName.Contains("card-mini__title")))!.TextContent}" +
                     $"{newsItem.QuerySelectorAll("span")
                         .FirstOrDefault(item => item.ClassName != null && (item.ClassName.Contains("card-big__rightcol") ||
-                                        item.ClassName.Contains("card-feature__rightcol")))!.TextContent}";
+                                        item.ClassName.Contains("card-feature__rightcol")||
+                                        item.ClassName.Contains("advertisable-plate__tooltip-content")))!.TextContent}";
             }
             else
             {

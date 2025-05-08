@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApp.DTO;
 using WebApp.Services;
+using WebApp.RabbitMqProducer;
 
 namespace WebApp.Controllers
 {
@@ -9,11 +10,15 @@ namespace WebApp.Controllers
     public class NewsInfoController : ControllerBase
     {
         private readonly INewsService _newsService;
+        private readonly IRabbitMqProducerService _mqService;
         private readonly ILogger<NewsInfoController> _logger;
 
-        public NewsInfoController(INewsService programmerService, ILogger<NewsInfoController> logger)
+        //[Route("[action]/{message}")]
+        //[HttpGet]
+        public NewsInfoController(INewsService programmerService, IRabbitMqProducerService mqService, ILogger<NewsInfoController> logger)
         {
             _newsService = programmerService;
+            _mqService = mqService;
             _logger = logger;
         }
 
@@ -25,6 +30,9 @@ namespace WebApp.Controllers
             try
             {
                 var result = await _newsService.GetNewsInfoAsync();
+                var newsForMessage = result.FirstOrDefault();
+                string message = $"{newsForMessage?.Header}. {newsForMessage?.PostTime}";
+                _mqService.SendMessage(message);
 
                 return Ok(result);
             }

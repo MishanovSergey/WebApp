@@ -1,3 +1,5 @@
+using WebApp.RabbitMqConsumer;
+using WebApp.RabbitMqProducer;
 using WebApp.Services;
 
 namespace WebApp
@@ -16,6 +18,8 @@ namespace WebApp
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddSingleton<INewsService, NewsService>();
+            builder.Services.AddSingleton<IRabbitMqProducerService, RabbitMqProducerService>();
+            builder.Services.AddSingleton<IRabbitMqConsumerService, RabbitMqConsumerService>();
 
             var app = builder.Build();
 
