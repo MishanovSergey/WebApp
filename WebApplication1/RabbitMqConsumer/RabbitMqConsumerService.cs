@@ -1,43 +1,96 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
+using WebApp.Services;
 
 namespace WebApp.RabbitMqConsumer
 {
-    public class RabbitMqConsumerService : IRabbitMqConsumerService
+    public class RabbitMqConsumerService : IRabbitMqConsumerService, IAsyncDisposable
     {
-        public async Task<string> GetMessage()
+        private readonly MessageStorageService _messageStorage;
+        private IConnection _connection;
+        private IChannel _channel;
+
+        public RabbitMqConsumerService(MessageStorageService messageStorage)
+        {
+            _messageStorage = messageStorage;
+        }
+
+        public async Task InitializeAsync()
         {
             var factory = new ConnectionFactory
             {
                 HostName = "localhost",
                 Port = 5672,
+                ConsumerDispatchConcurrency = 1
             };
-            using var connection = await factory.CreateConnectionAsync();
-            using var channel = await connection.CreateChannelAsync();
 
-            await channel.QueueDeclareAsync(queue: "MyQueue", durable: false, exclusive: false, autoDelete: false,
-            arguments: null);
+            _connection = await factory.CreateConnectionAsync();
+            _channel = await _connection.CreateChannelAsync();
 
-            StringBuilder result = new();
+            await _channel.QueueDeclareAsync(
+                queue: "MyQueue",
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+        }
+        public async Task<string> GetSingleMessageAsync(CancellationToken cancellationToken = default) 
+        {
+            if (_channel == null) await InitializeAsync();
 
-            var consumer = new AsyncEventingBasicConsumer(channel);
+            var tcs = new TaskCompletionSource<string>();
+
+            var consumer = new AsyncEventingBasicConsumer(_channel);
+
             consumer.ReceivedAsync += async (model, ea) =>
             {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                result.AppendLine($" [x] Received {message}");
-                Console.WriteLine($" [x] Received {message}");
+                try
+                {
+                    var message = Encoding.UTF8.GetString(ea.Body.Span);
+                    _messageStorage.Messages.Enqueue(message);
+                    Console.WriteLine($"Received message: {message}");
 
-                //int dots = message.Split('.').Length - 1;
-                //await Task.Delay(dots * 1000);
-
-                await Task.Yield();
+                    await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                    tcs.TrySetResult(message);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{ex}, Error processing message");
+                    await _channel.BasicNackAsync(ea.DeliveryTag, false, false);
+                    tcs.TrySetException(ex);
+                }
             };
 
-            await channel.BasicConsumeAsync("MyQueue", autoAck: true, consumer: consumer);
+            string consumerTag = await _channel.BasicConsumeAsync(
+                queue: "MyQueue",
+                autoAck: false,
+                consumer: consumer);
 
-            return result.ToString();
+            // Ждем получения одного сообщения или отмены
+            using (cancellationToken.Register(() => tcs.TrySetCanceled()))
+            {
+                try
+                {
+                    var result = await tcs.Task;
+                    await _channel.BasicCancelAsync(consumerTag);
+                    return result;
+                }
+                catch (OperationCanceledException)
+                {
+                    await _channel.BasicCancelAsync(consumerTag);
+                    throw;
+                }
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_channel != null)
+                await _channel.CloseAsync();
+
+            if (_connection != null)
+                await _connection.CloseAsync();
         }
     }
 }

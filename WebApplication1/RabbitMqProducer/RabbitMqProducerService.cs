@@ -23,7 +23,7 @@ namespace WebApp.RabbitMqProducer
             using var channel = await connection.CreateChannelAsync();
             {
                 await channel.QueueDeclareAsync(queue: "MyQueue",
-                                durable: false,
+                                durable: true,
                                 exclusive: false,
                                 autoDelete: false,
                                 arguments: null);

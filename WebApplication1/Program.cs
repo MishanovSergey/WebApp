@@ -20,6 +20,7 @@ namespace WebApp
             builder.Services.AddSingleton<INewsService, NewsService>();
             builder.Services.AddSingleton<IRabbitMqProducerService, RabbitMqProducerService>();
             builder.Services.AddSingleton<IRabbitMqConsumerService, RabbitMqConsumerService>();
+            builder.Services.AddSingleton<MessageStorageService>();
 
             var app = builder.Build();
 

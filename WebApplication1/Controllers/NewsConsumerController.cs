@@ -4,33 +4,32 @@ using WebApp.RabbitMqConsumer;
 namespace WebApp.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class NewsConsumerController : ControllerBase
+[Route("api/messages")]
+public class MessagesController : ControllerBase
+{
+    private readonly IRabbitMqConsumerService _consumerService;
+
+    public MessagesController(IRabbitMqConsumerService consumerService)
     {
-        private readonly IRabbitMqConsumerService _mqService;
-        private readonly ILogger<NewsInfoController> _logger;
+        _consumerService = consumerService;
+    }
 
-        public NewsConsumerController(IRabbitMqConsumerService mqService, ILogger<NewsInfoController> logger)
+    [HttpGet]
+    public async Task<IActionResult> GetMessage(CancellationToken cancellationToken)
+    {
+        try
         {
-            _mqService = mqService;
-            _logger = logger;
+            var message = await _consumerService.GetSingleMessageAsync(cancellationToken);
+            return Ok(message);
         }
-
-        [HttpGet]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Get()
+        catch (OperationCanceledException)
         {
-            try
-            {
-                var result = await _mqService.GetMessage();
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return StatusCode(499);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
         }
     }
+}
 }

@@ -2,5 +2,5 @@
 
 public interface IRabbitMqConsumerService
 {
-    Task<string> GetMessage();
+    Task<string> GetSingleMessageAsync(CancellationToken cancellationToken);
 }
